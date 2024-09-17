@@ -1,0 +1,46 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 1em;
+    text-align: center;
+}
+main {
+    padding: 2em;
+}
+form {
+    max-width: 500px;
+    margin: auto;
+}
+label {
+    display: block;
+    margin-top: 0.5em;
+}
+input[type="text"], input[type="email"], select {
+    width: 100%;
+    padding: 0.5em;
+    margin-top: 0.5em;
+}
+input[type="button"] {
+    margin-top: 1em;
+    padding: 0.5em 1em;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+input[type="button"]:hover {
+    background-color: #45a049;
+}
+.status-labels {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5em;
+}
+#off{
+    margin-left: 20px;
+}
