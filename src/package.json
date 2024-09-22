@@ -1,0 +1,20 @@
+{
+  "name": "chain",
+  "version": "1.0.0",
+  "description": "Trabalho API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "trabalho",
+    "api",
+    "rest"
+  ],
+  "author": "Equipe Chain",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.0",
+    "request": "^2.88.2"
+  }
+}

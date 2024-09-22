@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Arthur Meira",
+    "email": "arthur.meira@unesc.net",
+    "user": "arthur.meira",
+    "pwd": "IS8!*(H;",
+    "level": "admin",
+    "status": "on",
+    "id": "7a6cc1282c5f6ec0235acd2bfa780145aa2a67fd"
+  },
+  {
+    "name": "Pedro Luis",
+    "email": "pedro434_1@gmail.com",
+    "user": "pedro.luis",
+    "pwd": "oop0j91jr((",
+    "level": "admin",
+    "status": "on",
+    "id": "cf5cfab7-c358-4db1-8c83-6ead56d5faa7"
+  }
+]
