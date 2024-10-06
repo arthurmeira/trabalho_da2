@@ -1,16 +1,92 @@
-const express = require('express'); 
+const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
 const router = express.Router();
-const eventsDB = require('../db/events.json');
+let eventsDB = require('../db/events.json');
 
-// GET "/events" - Retorna todos os eventos
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Event:
+ *       type: object
+ *       required:
+ *         - id
+ *         - description
+ *         - comments
+ *         - date
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: O ID único do evento
+ *         description:
+ *           type: string
+ *           description: Descrição do evento
+ *         comments:
+ *           type: string
+ *           description: Comentários sobre o evento
+ *         date:
+ *           type: string
+ *           format: date-time
+ *           description: Data e hora do evento
+ *       example:
+ *         id: "31b36255-35c9-4c27-96a0-5756bdc629f4"
+ *         description: "Palestra Setembro Amarelo"
+ *         comments: "Profissionais de saúde mental da Unesc"
+ *         date: "2024-09-16T16:00:00Z"
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   - name: Events
+ *     description: API para gerenciamento de eventos
+ */
+
+/**
+ * @swagger
+ * /events:
+ *   get:
+ *     summary: Retorna uma lista de todos os eventos
+ *     tags: [Events]
+ *     responses:
+ *       200:
+ *         description: A lista de eventos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Event'
+ */
 router.get('/', (req, res) => {
     res.json(eventsDB);
 });
 
-// GET "/events/:id" - Retorna o evento pelo id
+/**
+ * @swagger
+ * /events/{id}:
+ *   get:
+ *     summary: Retorna um evento pelo ID
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID do evento
+ *     responses:
+ *       200:
+ *         description: Retorna os dados do evento
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Event'
+ *       404:
+ *         description: Evento não encontrado
+ */
 router.get('/:id', (req, res) => {
     const id = req.params.id;
     const event = eventsDB.find(event => event.id === id);
@@ -18,69 +94,123 @@ router.get('/:id', (req, res) => {
     res.json(event);
 });
 
-// POST "/events" - Cria um novo evento
+/**
+ * @swagger
+ * /events:
+ *   post:
+ *     summary: Cria um novo evento
+ *     tags: [Events]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Event'
+ *     responses:
+ *       201:
+ *         description: O evento foi criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Event'
+ *       400:
+ *         description: Campos obrigatórios faltando
+ */
 router.post('/', (req, res) => {
-    const event = req.body;
-    event.id = uuidv4();
+    const event = { id: uuidv4(), ...req.body };
 
-    // Validações de campos obrigatórios
-    if (!event.description) return res.status(400).json({ "erro": "O evento precisa ter uma descrição" });
-    if (!event.date) return res.status(400).json({ "erro": "O evento precisa ter uma data" });
-    if (!event.comments) return res.status(400).json({ "erro": "O evento precisa ter comentários" });
+    if (!event.description) return res.status(400).json({ "erro": "A descrição do evento é obrigatória" });
+    if (!event.comments) return res.status(400).json({ "erro": "Os comentários do evento são obrigatórios" });
+    if (!event.date) return res.status(400).json({ "erro": "A data do evento é obrigatória" });
 
     eventsDB.push(event);
+    fs.writeFileSync(path.join(__dirname, '../db/events.json'), JSON.stringify(eventsDB, null, 2), 'utf8');
 
-    // Salva no arquivo JSON
-    fs.writeFileSync(
-        path.join(__dirname, '../db/events.json'),
-        JSON.stringify(eventsDB, null, 2),
-        'utf8'
-    );
-    return res.json(event);
+    return res.status(201).json(event); 
 });
 
-// PUT "/events/:id" - Atualiza evento pelo id
+/**
+ * @swagger
+ * /events/{id}:
+ *   put:
+ *     summary: Atualiza os dados de um evento pelo ID
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID do evento
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Event'
+ *     responses:
+ *       200:
+ *         description: O evento foi atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Event'
+ *       404:
+ *         description: Evento não encontrado
+ */
 router.put('/:id', (req, res) => {
     const id = req.params.id;
-    const updatedEvent = req.body;
-    const eventIndex = eventsDB.findIndex(event => event.id === id);
+    const atualEventIndex = eventsDB.findIndex(event => event.id === id);
 
-    if (eventIndex === -1) {
+    if (atualEventIndex === -1) {
         return res.status(404).json({ "erro": "Evento não encontrado" });
     }
 
-    // Validações de campos obrigatórios
-    if (!updatedEvent.description) return res.status(400).json({ "erro": "O evento precisa ter uma descrição" });
-    if (!updatedEvent.date) return res.status(400).json({ "erro": "O evento precisa ter uma data" });
-    if (!updatedEvent.comments) return res.status(400).json({ "erro": "O evento precisa ter comentários" });
+    const newEvent = { ...req.body, id: eventsDB[atualEventIndex].id };
 
-    updatedEvent.id = eventsDB[eventIndex].id;
-    eventsDB[eventIndex] = updatedEvent;
+    if (!newEvent.description || !newEvent.comments || !newEvent.date) {
+        return res.status(400).json({ "erro": "Todos os campos devem ser preenchidos." });
+    }
 
-    // Salva as alterações no JSON
-    fs.writeFileSync(
-        path.join(__dirname, '../db/events.json'),
-        JSON.stringify(eventsDB, null, 2),
-        'utf8'
-    );
-    return res.json(updatedEvent);
+    eventsDB[atualEventIndex] = newEvent;
+    fs.writeFileSync(path.join(__dirname, '../db/events.json'), JSON.stringify(eventsDB, null, 2), 'utf8');
+
+    return res.json(newEvent);
 });
 
-// DELETE "/events/:id" - Remove um evento pelo ID
+/**
+ * @swagger
+ * /events/{id}:
+ *   delete:
+ *     summary: Deleta o evento através do ID
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID do evento
+ *     responses:
+ *       200:
+ *         description: O evento foi deletado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Event'
+ *       404:
+ *         description: Evento não encontrado
+ */
 router.delete('/:id', (req, res) => {
     const id = req.params.id;
-    const eventIndex = eventsDB.findIndex(event => event.id === id);
+    const atualEventIndex = eventsDB.findIndex(event => event.id === id);
 
-    if (eventIndex === -1) return res.status(404).json({ "erro": "Evento não encontrado" });
-    const deletedEvent = eventsDB.splice(eventIndex, 1)[0];
+    if (atualEventIndex === -1) return res.status(404).json({ "erro": "Evento não encontrado" });
 
-    fs.writeFileSync(
-        path.join(__dirname, '../db/events.json'),
-        JSON.stringify(eventsDB, null, 2),
-        'utf8'
-    );
+    const deletado = eventsDB.splice(atualEventIndex, 1)[0];
+    fs.writeFileSync(path.join(__dirname, '../db/events.json'), JSON.stringify(eventsDB, null, 2), 'utf8');
 
-    res.json(deletedEvent);
+    return res.json(deletado);
 });
 
 module.exports = router;
