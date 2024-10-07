@@ -50,7 +50,7 @@ let appointmentsDB = require('../db/appointments.json');
  * @swagger
  * tags:
  *   - name: Appointments
- *     description: API para gestão de compromissos (appointments)
+ *     description: Matheus Passoni
  */
 
 /**

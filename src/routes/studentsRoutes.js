@@ -56,7 +56,7 @@ let usersDB = require('../db/users.json');
  * @swagger
  * tags:
  *   - name: Students
- *     description: API para cadastro de estudantes
+ *     description: Guilherme Ferreira
  */
 
 /**

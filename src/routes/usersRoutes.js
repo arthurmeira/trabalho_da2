@@ -55,8 +55,7 @@ let usersDB = require('../db/users.json');
  * tags:
  *   - name: Users
  *     description: >
- *       API ENSINO ESPECIAL |   
- *       **CHAIN**
+ *       Arthur Meira 
  */
 
 /**

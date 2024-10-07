@@ -41,7 +41,7 @@ let eventsDB = require('../db/events.json');
  * @swagger
  * tags:
  *   - name: Events
- *     description: API para gerenciamento de eventos
+ *     description: Diego
  */
 
 /**

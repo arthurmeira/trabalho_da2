@@ -50,8 +50,7 @@ let professionalsDB = require('../db/professionals.json');
  * tags:
  *   - name: Professionals
  *     description: >
- *       API ENSINO ESPECIAL |   
- *       **CHAIN**
+ *       Luigi
  */
 
 /**
