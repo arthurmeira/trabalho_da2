@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../Dashboard.css'; // Estilos para o Dashboard
+import './css/Dashboard.css'; // Estilos para o Dashboard
 
 function Dashboard() {
   const navigate = useNavigate(); // Atualizado de useHistory para useNavigate

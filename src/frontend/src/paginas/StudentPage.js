@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../StudentPage.css'; // Importar o CSS
+import './css/StudentPage.css'; // Importar o CSS
 
 function StudentPage() {
   const [students, setStudents] = useState([]);

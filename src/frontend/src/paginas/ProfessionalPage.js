@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../ProfessionalPage.css'; // Importar o CSS
+import './css/ProfessionalPage.css'; // Importar o CSS
 
 function ProfessionalPage() {
   const [professionals, setProfessionals] = useState([]);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../EventPage.css'; // Adicione o CSS da página
+import './css/EventPage.css'; // Adicione o CSS da página
 
 function EventPage() {
   const [events, setEvents] = useState([]);
