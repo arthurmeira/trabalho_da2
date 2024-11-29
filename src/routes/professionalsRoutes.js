@@ -3,227 +3,242 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
 const router = express.Router();
-let professionalsDB = require('../db/professionals.json');
+let studentsDB = require('../db/students.json');
+let usersDB = require('../db/users.json'); 
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     Professionals:
+ *     Student:
  *       type: object
  *       required:
  *         - id
  *         - name
- *         - specialty
- *         - contact
+ *         - age
+ *         - parents
  *         - phone_number
+ *         - special_needs
  *         - status
  *       properties:
  *         id:
  *           type: string
- *           description: O id é gerado automaticamente no cadastro do Profissional
+ *           description: O ID deve ser associado a um usuário existente
  *         name:
  *           type: string
- *           description: Nome do Profissional
- *         specialty:
+ *           description: Nome do estudante (preenchido automaticamente com base no usuário)
+ *         age:
  *           type: string
- *           description: Especialidade do Profissional
- *         contact:
+ *           description: Idade do estudante
+ *         parents:
  *           type: string
- *           description: Contato do Profissional
+ *           description: Pais ou responsáveis do estudante
  *         phone_number:
  *           type: string
- *           description: Número de telefone do Profissional
+ *           description: Número de telefone dos responsáveis
+ *         special_needs:
+ *           type: string
+ *           description: Necessidades especiais, se houver
  *         status:
  *           type: string
- *           description: Se o Profissional está ativo
+ *           description: Status do estudante (ativo/inativo)
  *       example:
- *         name: Nome aqui...
- *         specialty: Especialidade aqui...
- *         contact: Contato aqui...
- *         phone_number: Número aqui...
- *         status: Status aqui (on / off)...
+ *         id: "id correspondente"
+ *         name: ""
+ *         age: "idade do aluno"
+ *         parents: "nome dos responsalveis"
+ *         phone_number: "xx xxxx-xxxx"
+ *         special_needs: "doença"
+ *         status: on/off
  */
 
 /**
  * @swagger
  * tags:
- *   - name: Professionals
- *     description: >
- *       Luigi
+ *   - name: Students
+ *     description: CRUD de estudantes
  */
 
 /**
  * @swagger
- * /professionals:
+ * /students:
  *   get:
- *     summary: Retorna uma lista de todos os profissionais
- *     tags: [Professionals]
+ *     summary: Retorna uma lista de todos os estudantes
+ *     tags: [Students]
  *     responses:
  *       200:
- *         description: A lista de profissionais
+ *         description: A lista de estudantes
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Professionals'
+ *                 $ref: '#/components/schemas/Student'
  */
 router.get('/', (req, res) => {
-    res.json(professionalsDB);
+    res.json(studentsDB);
 });
 
 /**
  * @swagger
- * /professionals/{id}:
+ * /students/{id}:
  *   get:
- *     summary: Retorna um profissional pelo ID
- *     tags: [Professionals]
+ *     summary: Retorna um estudante pelo ID
+ *     tags: [Students]
  *     parameters:
  *       - in: path
  *         name: id
  *         schema:
  *           type: string
  *         required: true
- *         description: ID do Profissional
+ *         description: ID do estudante
  *     responses:
  *       200:
- *         description: Retorna os dados do profissional
+ *         description: Retorna os dados do estudante
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Professionals'
+ *               $ref: '#/components/schemas/Student'
  *       404:
- *         description: Profissional não encontrado
+ *         description: Estudante não encontrado
  */
 router.get('/:id', (req, res) => {
     const id = req.params.id;
-    const professional = professionalsDB.find(prof => prof.id === id);
-    if (!professional) return res.status(404).json({ "erro": "Profissional não encontrado" });
-    res.json(professional);
+    const student = studentsDB.find(student => student.id === id);
+    if (!student) return res.status(404).json({ "erro": "Estudante não encontrado" });
+    res.json(student);
 });
 
 /**
  * @swagger
- * /professionals:
+ * /students:
  *   post:
- *     summary: Cria um novo profissional
- *     tags: [Professionals]
+ *     summary: Cria um novo estudante (somente se tiver um usuário associado)
+ *     tags: [Students]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Professionals'
+ *             $ref: '#/components/schemas/Student'
  *     responses:
  *       201:
- *         description: O Profissional foi criado com sucesso
+ *         description: O estudante foi criado com sucesso
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Professionals'
+ *               $ref: '#/components/schemas/Student'
+ *       400:
+ *         description: O ID do estudante não está associado a nenhum usuário
  */
 router.post('/', (req, res) => {
-    const { name, specialty, contact, phone_number, status } = req.body;
+    const student = { ...req.body };
 
-    // Validações
-    if (!name) return res.status(400).json({ "erro": "O Profissional tem que ter um nome" });
-    if (!specialty) return res.status(400).json({ "erro": "O Profissional tem que ter uma especialidade" });
-    if (!contact) return res.status(400).json({ "erro": "O Profissional precisa ter um contato" });
-    if (!phone_number) return res.status(400).json({ "erro": "O Profissional precisa de um número de telefone" });
-    if (!status) return res.status(400).json({ "erro": "O Profissional precisa ter um status" });
+    const user = usersDB.find(user => user.id === student.id);
+    if (!user) {
+        return res.status(400).json({ "erro": "O ID do estudante não está associado a nenhum usuário" });
+    }
 
-    // Cria um novo profissional com um ID gerado automaticamente
-    const professional = { id: uuidv4(), name, specialty, contact, phone_number, status };
+    student.name = user.name;
 
-    // Adiciona o profissional à lista
-    professionalsDB.push(professional);
-    fs.writeFileSync(path.join(__dirname, '../db/professionals.json'), JSON.stringify(professionalsDB, null, 2), 'utf8');
+    if (!student.age) return res.status(400).json({ "erro": "O estudante precisa ter uma idade" });
+    if (!student.parents) return res.status(400).json({ "erro": "O estudante precisa ter pais ou responsáveis" });
+    if (!student.phone_number) return res.status(400).json({ "erro": "O estudante precisa ter um número de telefone" });
+    if (!student.special_needs) return res.status(400).json({ "erro": "O estudante precisa ter necessidades especiais" });
+    if (!student.status) return res.status(400).json({ "erro": "O estudante precisa ter um status" });
 
-    return res.status(201).json(professional);
+    studentsDB.push(student);
+    fs.writeFileSync(path.join(__dirname, '../db/students.json'), JSON.stringify(studentsDB, null, 2), 'utf8');
+    
+    return res.status(201).json(student); 
 });
 
 /**
  * @swagger
- * /professionals/{id}:
+ * /students/{id}:
  *   put:
- *     summary: Atualiza os dados de um Profissional pela ID
- *     tags: [Professionals]
+ *     summary: Atualiza os dados de um estudante pelo ID
+ *     tags: [Students]
  *     parameters:
  *       - in: path
  *         name: id
  *         schema:
  *           type: string
  *         required: true
- *         description: ID do Profissional
+ *         description: ID do estudante
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Professionals'
+ *             $ref: '#/components/schemas/Student'
  *     responses:
  *       200:
- *         description: O Profissional foi atualizado com sucesso
+ *         description: O estudante foi atualizado com sucesso
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Professionals'
+ *               $ref: '#/components/schemas/Student'
  *       404:
- *         description: Profissional não encontrado
+ *         description: Estudante não encontrado
  */
 router.put('/:id', (req, res) => {
     const id = req.params.id;
-    const atualProfIndex = professionalsDB.findIndex(atualProf => atualProf.id === id);
+    const atualStudentIndex = studentsDB.findIndex(student => student.id === id);
 
-    if (atualProfIndex === -1) {
-        return res.status(404).json({ "erro": "Profissional não encontrado" });
+    if (atualStudentIndex === -1) {
+        return res.status(404).json({ "erro": "Estudante não encontrado" });
     }
 
-    const newProf = { ...req.body, id: professionalsDB[atualProfIndex].id };
+    const newStudent = { ...req.body, id: studentsDB[atualStudentIndex].id };
 
-    // Validações
-    if (!newProf.name || !newProf.specialty || !newProf.contact || !newProf.phone_number || !newProf.status) {
+    const user = usersDB.find(user => user.id === newStudent.id);
+    if (!user) {
+        return res.status(400).json({ "erro": "O ID do estudante não está associado a nenhum usuário" });
+    }
+    newStudent.name = user.name;
+
+    if (!newStudent.age || !newStudent.parents || !newStudent.phone_number || !newStudent.special_needs || !newStudent.status) {
         return res.status(400).json({ "erro": "Todos os campos devem ser preenchidos." });
     }
 
-    professionalsDB[atualProfIndex] = newProf;
-    fs.writeFileSync(path.join(__dirname, '../db/professionals.json'), JSON.stringify(professionalsDB, null, 2), 'utf8');
-
-    return res.json(newProf);
+    studentsDB[atualStudentIndex] = newStudent;
+    fs.writeFileSync(path.join(__dirname, '../db/students.json'), JSON.stringify(studentsDB, null, 2), 'utf8');
+    
+    return res.json(newStudent);
 });
 
 /**
  * @swagger
- * /professionals/{id}:
+ * /students/{id}:
  *   delete:
- *     summary: Deleta o Profissional através do ID
- *     tags: [Professionals]
+ *     summary: Deleta o estudante através do ID
+ *     tags: [Students]
  *     parameters:
  *       - in: path
  *         name: id
  *         schema:
  *           type: string
  *         required: true
- *         description: ID do Profissional
+ *         description: ID do estudante
  *     responses:
  *       200:
- *         description: O Profissional foi deletado com sucesso
+ *         description: O estudante foi deletado com sucesso
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Professionals'
+ *               $ref: '#/components/schemas/Student'
  *       404:
- *         description: Profissional não encontrado
+ *         description: Estudante não encontrado
  */
 router.delete('/:id', (req, res) => {
     const id = req.params.id;
-    const atualProfIndex = professionalsDB.findIndex(prof => prof.id === id);
+    const atualStudentIndex = studentsDB.findIndex(student => student.id === id);
 
-    if (atualProfIndex === -1) return res.status(404).json({ "erro": "Profissional não encontrado" });
+    if (atualStudentIndex === -1) return res.status(404).json({ "erro": "Estudante não encontrado" });
 
-    const deletado = professionalsDB.splice(atualProfIndex, 1)[0];
-    fs.writeFileSync(path.join(__dirname, '../db/professionals.json'), JSON.stringify(professionalsDB, null, 2), 'utf8');
+    const deletado = studentsDB.splice(atualStudentIndex, 1)[0];
+    fs.writeFileSync(path.join(__dirname, '../db/students.json'), JSON.stringify(studentsDB, null, 2), 'utf8');
 
     return res.json(deletado);
 });

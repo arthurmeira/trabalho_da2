@@ -1,9 +1,16 @@
 const express = require('express');
-const { v4: uuidv4 } = require('uuid');
-const fs = require('fs');
-const path = require('path');
+const mongoose = require('mongoose');
 const router = express.Router();
-let eventsDB = require('../db/events.json');
+
+// Definindo o esquema do evento
+const eventSchema = new mongoose.Schema({
+  description: { type: String, required: true },
+  comments: { type: String, required: true },
+  date: { type: Date, required: true },
+});
+
+// Criando o modelo de Evento
+const Event = mongoose.models.Event || mongoose.model('Event', eventSchema);
 
 /**
  * @swagger
@@ -12,7 +19,6 @@ let eventsDB = require('../db/events.json');
  *     Event:
  *       type: object
  *       required:
- *         - id
  *         - description
  *         - comments
  *         - date
@@ -41,7 +47,7 @@ let eventsDB = require('../db/events.json');
  * @swagger
  * tags:
  *   - name: Events
- *     description: Diego
+ *     description: Eventos de Diego
  */
 
 /**
@@ -52,7 +58,7 @@ let eventsDB = require('../db/events.json');
  *     tags: [Events]
  *     responses:
  *       200:
- *         description: A lista de eventos
+ *         description: Lista de eventos
  *         content:
  *           application/json:
  *             schema:
@@ -60,8 +66,13 @@ let eventsDB = require('../db/events.json');
  *               items:
  *                 $ref: '#/components/schemas/Event'
  */
-router.get('/', (req, res) => {
-    res.json(eventsDB);
+router.get('/', async (req, res) => {
+  try {
+    const events = await Event.find();  // Busca todos os eventos do MongoDB
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar eventos' });
+  }
 });
 
 /**
@@ -87,11 +98,14 @@ router.get('/', (req, res) => {
  *       404:
  *         description: Evento não encontrado
  */
-router.get('/:id', (req, res) => {
-    const id = req.params.id;
-    const event = eventsDB.find(event => event.id === id);
-    if (!event) return res.status(404).json({ "erro": "Evento não encontrado" });
+router.get('/:id', async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ error: 'Evento não encontrado' });
     res.json(event);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar evento' });
+  }
 });
 
 /**
@@ -108,25 +122,25 @@ router.get('/:id', (req, res) => {
  *             $ref: '#/components/schemas/Event'
  *     responses:
  *       201:
- *         description: O evento foi criado com sucesso
+ *         description: Evento criado com sucesso
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Event'
- *       400:
- *         description: Campos obrigatórios faltando
  */
-router.post('/', (req, res) => {
-    const event = { id: uuidv4(), ...req.body };
+router.post('/', async (req, res) => {
+  const { description, comments, date } = req.body;
+  if (!description || !comments || !date) {
+    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+  }
 
-    if (!event.description) return res.status(400).json({ "erro": "A descrição do evento é obrigatória" });
-    if (!event.comments) return res.status(400).json({ "erro": "Os comentários do evento são obrigatórios" });
-    if (!event.date) return res.status(400).json({ "erro": "A data do evento é obrigatória" });
-
-    eventsDB.push(event);
-    fs.writeFileSync(path.join(__dirname, '../db/events.json'), JSON.stringify(eventsDB, null, 2), 'utf8');
-
-    return res.status(201).json(event); 
+  try {
+    const event = new Event({ description, comments, date });
+    await event.save();
+    res.status(201).json(event);
+  } catch (error) {
+    res.status(400).json({ error: 'Erro ao criar evento', details: error.message });
+  }
 });
 
 /**
@@ -150,7 +164,7 @@ router.post('/', (req, res) => {
  *             $ref: '#/components/schemas/Event'
  *     responses:
  *       200:
- *         description: O evento foi atualizado com sucesso
+ *         description: Evento atualizado com sucesso
  *         content:
  *           application/json:
  *             schema:
@@ -158,24 +172,14 @@ router.post('/', (req, res) => {
  *       404:
  *         description: Evento não encontrado
  */
-router.put('/:id', (req, res) => {
-    const id = req.params.id;
-    const atualEventIndex = eventsDB.findIndex(event => event.id === id);
-
-    if (atualEventIndex === -1) {
-        return res.status(404).json({ "erro": "Evento não encontrado" });
-    }
-
-    const newEvent = { ...req.body, id: eventsDB[atualEventIndex].id };
-
-    if (!newEvent.description || !newEvent.comments || !newEvent.date) {
-        return res.status(400).json({ "erro": "Todos os campos devem ser preenchidos." });
-    }
-
-    eventsDB[atualEventIndex] = newEvent;
-    fs.writeFileSync(path.join(__dirname, '../db/events.json'), JSON.stringify(eventsDB, null, 2), 'utf8');
-
-    return res.json(newEvent);
+router.put('/:id', async (req, res) => {
+  try {
+    const event = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!event) return res.status(404).json({ error: 'Evento não encontrado' });
+    res.json(event);
+  } catch (error) {
+    res.status(400).json({ error: 'Erro ao atualizar evento', details: error.message });
+  }
 });
 
 /**
@@ -193,7 +197,7 @@ router.put('/:id', (req, res) => {
  *         description: ID do evento
  *     responses:
  *       200:
- *         description: O evento foi deletado com sucesso
+ *         description: Evento deletado com sucesso
  *         content:
  *           application/json:
  *             schema:
@@ -201,16 +205,14 @@ router.put('/:id', (req, res) => {
  *       404:
  *         description: Evento não encontrado
  */
-router.delete('/:id', (req, res) => {
-    const id = req.params.id;
-    const atualEventIndex = eventsDB.findIndex(event => event.id === id);
-
-    if (atualEventIndex === -1) return res.status(404).json({ "erro": "Evento não encontrado" });
-
-    const deletado = eventsDB.splice(atualEventIndex, 1)[0];
-    fs.writeFileSync(path.join(__dirname, '../db/events.json'), JSON.stringify(eventsDB, null, 2), 'utf8');
-
-    return res.json(deletado);
+router.delete('/:id', async (req, res) => {
+  try {
+    const event = await Event.findByIdAndDelete(req.params.id);
+    if (!event) return res.status(404).json({ error: 'Evento não encontrado' });
+    res.json({ message: 'Evento deletado com sucesso', event });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao deletar evento' });
+  }
 });
 
 module.exports = router;

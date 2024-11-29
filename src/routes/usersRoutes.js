@@ -1,9 +1,19 @@
 const express = require('express');
-const { v4: uuidv4 } = require('uuid');
-const fs = require('fs');
-const path = require('path');
 const router = express.Router();
-let usersDB = require('../db/users.json');
+const mongoose = require('mongoose');
+
+// Definindo o esquema do usuário
+const userSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true },
+    user: { type: String, required: true },
+    pwd: { type: String, required: true },
+    level: { type: String, required: true },
+    status: { type: String, required: true }
+});
+
+// Criando o modelo, garantindo que o modelo não seja redefinido
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 /**
  * @swagger
@@ -12,7 +22,6 @@ let usersDB = require('../db/users.json');
  *     Users:
  *       type: object
  *       required:
- *         - id
  *         - name
  *         - email
  *         - user
@@ -22,7 +31,7 @@ let usersDB = require('../db/users.json');
  *       properties:
  *         id:
  *           type: string
- *           description: O id é gerado automaticamente no cadastro do Usuário
+ *           description: O ID do Usuário
  *         name:
  *           type: string
  *           description: Nome do Usuário
@@ -31,31 +40,30 @@ let usersDB = require('../db/users.json');
  *           description: E-mail do Usuário
  *         user:
  *           type: string
- *           description: Nome de usuário do Usuário
+ *           description: Nome de usuário
  *         pwd:
  *           type: string
  *           description: Senha do Usuário
  *         level:
  *           type: string
- *           description: Nível de acesso do Usuário
+ *           description: Nível de acesso
  *         status:
  *           type: string
- *           description: Se o Usuário está ativo
+ *           description: Status do Usuário
  *       example:
- *         name: Nome aqui...
- *         email: Email aqui...
- *         user: Usuário aqui...
- *         pwd: Senha aqui...
- *         level: Nívdel aqui (1 - admin / 2 - padrao)...
- *         status: Status aqui (on / off)...
+ *         name: "Arthur Meira"
+ *         email: "arthur@exemplo.com"
+ *         user: "arthur123"
+ *         pwd: "senha123"
+ *         level: "1"
+ *         status: "on"
  */
 
 /**
  * @swagger
  * tags:
  *   - name: Users
- *     description: >
- *       Arthur Meira 
+ *     description: Gestão de usuários
  */
 
 /**
@@ -66,7 +74,7 @@ let usersDB = require('../db/users.json');
  *     tags: [Users]
  *     responses:
  *       200:
- *         description: A lista de usuários
+ *         description: Lista de usuários
  *         content:
  *           application/json:
  *             schema:
@@ -74,9 +82,13 @@ let usersDB = require('../db/users.json');
  *               items:
  *                 $ref: '#/components/schemas/Users'
  */
-router.get('/', (req, res) => {
-    console.log("getroute");
-    res.json(usersDB);
+router.get('/', async (req, res) => {
+    try {
+        const users = await User.find();  // Carregar os usuários do MongoDB
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar usuários' });
+    }
 });
 
 /**
@@ -102,11 +114,14 @@ router.get('/', (req, res) => {
  *       404:
  *         description: Usuário não encontrado
  */
-router.get('/:id', (req, res) => {
-    const id = req.params.id;
-    const user = usersDB.find(user => user.id === id);
-    if (!user) return res.status(404).json({ "erro": "Usuário não encontrado" });
-    res.json(user);
+router.get('/:id', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar usuário' });
+    }
 });
 
 /**
@@ -123,35 +138,27 @@ router.get('/:id', (req, res) => {
  *             $ref: '#/components/schemas/Users'
  *     responses:
  *       201:
- *         description: O Usuário foi criado com sucesso
+ *         description: Usuário criado com sucesso
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Users'
  */
-router.post('/', (req, res) => {
-    const user = { ...req.body, id: uuidv4() };
-    console.log(user)
-    console.log(req.body); // Veja se o corpo está correto
-    // Validações
-    if (!user.name) return res.status(400).json({ "erro": "O Usuário precisa ter um nome" });
-    if (!user.email) return res.status(400).json({ "erro": "O Usuário precisa ter um e-mail" });
-    if (!user.user) return res.status(400).json({ "erro": "O Usuário precisa ter um nome de usuário" });
-    if (!user.pwd) return res.status(400).json({ "erro": "O Usuário precisa ter uma senha" });
-    if (!user.level) return res.status(400).json({ "erro": "O Usuário precisa ter um nível de acesso" });
-    if (!user.status) return res.status(400).json({ "erro": "O Usuário precisa ter um status" });
-
-    usersDB.push(user);
-    fs.writeFileSync(path.join(__dirname, '../db/users.json'), JSON.stringify(usersDB, null, 2), 'utf8');
-    
-    return res.status(201).json(user); // Retorna 201 Created
+router.post('/', async (req, res) => {
+    try {
+        const user = new User(req.body);
+        await user.save();
+        res.status(201).json(user);
+    } catch (error) {
+        res.status(400).json({ error: 'Erro ao criar usuário', details: error.message });
+    }
 });
 
 /**
  * @swagger
  * /users/{id}:
  *   put:
- *     summary: Atualiza os dados de um Usuário pela ID
+ *     summary: Atualiza os dados de um usuário pelo ID
  *     tags: [Users]
  *     parameters:
  *       - in: path
@@ -168,7 +175,7 @@ router.post('/', (req, res) => {
  *             $ref: '#/components/schemas/Users'
  *     responses:
  *       200:
- *         description: O Usuário foi atualizado com sucesso
+ *         description: Usuário atualizado com sucesso
  *         content:
  *           application/json:
  *             schema:
@@ -176,33 +183,21 @@ router.post('/', (req, res) => {
  *       404:
  *         description: Usuário não encontrado
  */
-router.put('/:id', (req, res) => {
-    const id = req.params.id;
-    const atualUserIndex = usersDB.findIndex(atualUser => atualUser.id === id);
-
-    if (atualUserIndex === -1) {
-        return res.status(404).json({ "erro": "Usuário não encontrado" });
+router.put('/:id', async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+        res.json(user);
+    } catch (error) {
+        res.status(400).json({ error: 'Erro ao atualizar usuário', details: error.message });
     }
-
-    const newUser = { ...req.body, id: usersDB[atualUserIndex].id };
-
-    // Validações
-    if (!newUser.name || !newUser.email || !newUser.user || !newUser.pwd || !newUser.level || !newUser.status) {
-        return res.status(400).json({ "erro": "Todos os campos devem ser preenchidos." });
-    }
-
-    usersDB[atualUserIndex] = newUser;
-    fs.writeFileSync(path.join(__dirname, '../db/users.json'), JSON.stringify(usersDB, null, 2), 'utf8');
-    
-    return res.json(newUser);
 });
-
 
 /**
  * @swagger
  * /users/{id}:
  *   delete:
- *     summary: Deleta o Usuário através do ID
+ *     summary: Deleta um usuário pelo ID
  *     tags: [Users]
  *     parameters:
  *       - in: path
@@ -213,7 +208,7 @@ router.put('/:id', (req, res) => {
  *         description: ID do Usuário
  *     responses:
  *       200:
- *         description: O Usuário foi deletado com sucesso
+ *         description: Usuário deletado com sucesso
  *         content:
  *           application/json:
  *             schema:
@@ -221,16 +216,14 @@ router.put('/:id', (req, res) => {
  *       404:
  *         description: Usuário não encontrado
  */
-router.delete('/:id', (req, res) => {
-    const id = req.params.id;
-    const atualUserIndex = usersDB.findIndex(user => user.id === id);
-
-    if (atualUserIndex === -1) return res.status(404).json({ "erro": "Usuário não encontrado" });
-
-    const deletado = usersDB.splice(atualUserIndex, 1)[0];
-    fs.writeFileSync(path.join(__dirname, '../db/users.json'), JSON.stringify(usersDB, null, 2), 'utf8');
-
-    return res.json(deletado);
+router.delete('/:id', async (req, res) => {
+    try {
+        const user = await User.findByIdAndDelete(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+        res.json({ message: 'Usuário deletado com sucesso', user });
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao deletar usuário' });
+    }
 });
 
 module.exports = router;
