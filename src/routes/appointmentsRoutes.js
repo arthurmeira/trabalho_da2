@@ -1,9 +1,17 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
-const fs = require('fs');
-const path = require('path');
+const mongoose = require('mongoose');
 const router = express.Router();
-let appointmentsDB = require('../db/appointments.json');
+
+// Modelo Mongoose para Compromissos
+const Appointment = mongoose.model('Appointment', new mongoose.Schema({
+    id: { type: String, required: true, unique: true },
+    specialty: { type: String, required: true },
+    comments: { type: String, required: true },
+    date: { type: Date, required: true },
+    student: { type: String, required: true },
+    professional: { type: String, required: true },
+}));
 
 /**
  * @swagger
@@ -50,7 +58,7 @@ let appointmentsDB = require('../db/appointments.json');
  * @swagger
  * tags:
  *   - name: Appointments
- *     description: Matheus Passoni
+ *     description: Gestão de compromissos
  */
 
 /**
@@ -69,8 +77,13 @@ let appointmentsDB = require('../db/appointments.json');
  *               items:
  *                 $ref: '#/components/schemas/Appointment'
  */
-router.get('/', (req, res) => {
-    res.json(appointmentsDB);
+router.get('/', async (req, res) => {
+    try {
+        const appointments = await Appointment.find();
+        res.json(appointments);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar compromissos', details: error.message });
+    }
 });
 
 /**
@@ -82,8 +95,6 @@ router.get('/', (req, res) => {
  *     parameters:
  *       - in: path
  *         name: id
- *         schema:
- *           type: string
  *         required: true
  *         description: ID do compromisso
  *     responses:
@@ -96,11 +107,14 @@ router.get('/', (req, res) => {
  *       404:
  *         description: Compromisso não encontrado
  */
-router.get('/:id', (req, res) => {
-    const id = req.params.id;
-    const appointment = appointmentsDB.find(appt => appt.id === id);
-    if (!appointment) return res.status(404).json({ "erro": "Compromisso não encontrado" });
-    res.json(appointment);
+router.get('/:id', async (req, res) => {
+    try {
+        const appointment = await Appointment.findOne({ id: req.params.id });
+        if (!appointment) return res.status(404).json({ error: 'Compromisso não encontrado' });
+        res.json(appointment);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar compromisso', details: error.message });
+    }
 });
 
 /**
@@ -123,19 +137,28 @@ router.get('/:id', (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Appointment'
  */
-router.post('/', (req, res) => {
-    const appointment = { id: uuidv4(), ...req.body };
+router.post('/', async (req, res) => {
+    const { specialty, comments, date, student, professional } = req.body;
 
-    
-    if (!appointment.specialty || !appointment.comments || !appointment.date || !appointment.student || !appointment.professional) {
-        return res.status(400).json({ "erro": "Todos os campos são obrigatórios." });
+    if (!specialty || !comments || !date || !student || !professional) {
+        return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
     }
 
-    
-    appointmentsDB.push(appointment);
-    fs.writeFileSync(path.join(__dirname, '../db/appointments.json'), JSON.stringify(appointmentsDB, null, 2), 'utf8');
+    const newAppointment = new Appointment({
+        id: uuidv4(),
+        specialty,
+        comments,
+        date: new Date(date),
+        student,
+        professional
+    });
 
-    return res.status(201).json(appointment);
+    try {
+        await newAppointment.save();
+        res.status(201).json(newAppointment);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao criar compromisso', details: error.message });
+    }
 });
 
 /**
@@ -147,8 +170,6 @@ router.post('/', (req, res) => {
  *     parameters:
  *       - in: path
  *         name: id
- *         schema:
- *           type: string
  *         required: true
  *         description: ID do compromisso
  *     requestBody:
@@ -167,24 +188,28 @@ router.post('/', (req, res) => {
  *       404:
  *         description: Compromisso não encontrado
  */
-router.put('/:id', (req, res) => {
-    const id = req.params.id;
-    const appointmentIndex = appointmentsDB.findIndex(appt => appt.id === id);
+router.put('/:id', async (req, res) => {
+    const { specialty, comments, date, student, professional } = req.body;
 
-    if (appointmentIndex === -1) {
-        return res.status(404).json({ "erro": "Compromisso não encontrado" });
+    if (!specialty || !comments || !date || !student || !professional) {
+        return res.status(400).json({ error: 'Todos os campos devem ser preenchidos.' });
     }
 
-    const updatedAppointment = { ...req.body, id: appointmentsDB[appointmentIndex].id };
+    try {
+        const updatedAppointment = await Appointment.findOneAndUpdate(
+            { id: req.params.id },
+            { specialty, comments, date: new Date(date), student, professional },
+            { new: true }
+        );
 
-    if (!updatedAppointment.specialty || !updatedAppointment.comments || !updatedAppointment.date || !updatedAppointment.student || !updatedAppointment.professional) {
-        return res.status(400).json({ "erro": "Todos os campos devem ser preenchidos." });
+        if (!updatedAppointment) {
+            return res.status(404).json({ error: 'Compromisso não encontrado' });
+        }
+
+        res.json(updatedAppointment);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao atualizar compromisso', details: error.message });
     }
-
-    appointmentsDB[appointmentIndex] = updatedAppointment;
-    fs.writeFileSync(path.join(__dirname, '../db/appointments.json'), JSON.stringify(appointmentsDB, null, 2), 'utf8');
-
-    return res.json(updatedAppointment);
 });
 
 /**
@@ -196,8 +221,6 @@ router.put('/:id', (req, res) => {
  *     parameters:
  *       - in: path
  *         name: id
- *         schema:
- *           type: string
  *         required: true
  *         description: ID do compromisso
  *     responses:
@@ -210,16 +233,16 @@ router.put('/:id', (req, res) => {
  *       404:
  *         description: Compromisso não encontrado
  */
-router.delete('/:id', (req, res) => {
-    const id = req.params.id;
-    const appointmentIndex = appointmentsDB.findIndex(appt => appt.id === id);
-
-    if (appointmentIndex === -1) return res.status(404).json({ "erro": "Compromisso não encontrado" });
-
-    const deletedAppointment = appointmentsDB.splice(appointmentIndex, 1)[0];
-    fs.writeFileSync(path.join(__dirname, '../db/appointments.json'), JSON.stringify(appointmentsDB, null, 2), 'utf8');
-
-    return res.json(deletedAppointment);
+router.delete('/:id', async (req, res) => {
+    try {
+        const deletedAppointment = await Appointment.findOneAndDelete({ id: req.params.id });
+        if (!deletedAppointment) {
+            return res.status(404).json({ error: 'Compromisso não encontrado' });
+        }
+        res.json(deletedAppointment);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao deletar compromisso', details: error.message });
+    }
 });
 
 module.exports = router;
