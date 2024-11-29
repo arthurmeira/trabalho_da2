@@ -1,0 +1,133 @@
+/* Estilo do container principal */
+.teacher-page-container {
+    font-family: 'Arial', sans-serif;
+    padding: 30px;
+    background-color: #f4f7fc;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+/* Título principal */
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    font-size: 28px;
+    margin-bottom: 40px;
+}
+
+/* Estilo para mensagens de erro */
+.error {
+    color: #e74c3c;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Estilo do formulário */
+.teacher-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 50px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.teacher-form input,
+.teacher-form select {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    background-color: #fafafa;
+}
+
+.teacher-form button {
+    width: 100%;
+    padding: 12px;
+    background-color: #3498db;
+    color: #fff;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.teacher-form button:hover {
+    background-color: #2980b9;
+}
+
+/* Tabela de professores */
+.teacher-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.teacher-table th,
+.teacher-table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.teacher-table th {
+    background-color: #f8f9fa;
+}
+
+.teacher-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.teacher-table tr:hover {
+    background-color: #e9ecef;
+}
+
+/* Botões da tabela */
+.teacher-table button {
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #27ae60;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.teacher-table button:hover {
+    background-color: #2ecc71;
+}
+
+.teacher-table button:last-child {
+    background-color: #e74c3c;
+}
+
+.teacher-table button:last-child:hover {
+    background-color: #c0392b;
+}
+
+/* Estilo do botão de alternar visibilidade */
+.toggle-btn {
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: #fff;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 20px auto;
+    display: block;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-btn:hover {
+    background-color: #2980b9;
+}

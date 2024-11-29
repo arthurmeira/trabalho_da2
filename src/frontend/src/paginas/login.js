@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Importando o useNavigate
 import '../login.css'; // Arquivo CSS para estilos
 
 function Login() {
@@ -6,13 +7,16 @@ function Login() {
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [logado, setLogado] = useState(false);
+  const navigate = useNavigate(); // Inicializando o useNavigate
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (email === 'admin@exemplo.com' && senha === '123456') {
+    // Validação de login
+    if (email === 'ad@g.com' && senha === '123') {
       setLogado(true);
       setErro('');
+      navigate('/dashboard'); // Redireciona para a página de Dashboard
     } else {
       setErro('Usuário ou senha inválidos.');
       setLogado(false);

@@ -1,0 +1,104 @@
+/* Dashboard.css */
+
+/* Container principal da página, responsável por centralizar e dar estilo ao conteúdo */
+.dashboard-container {
+    background: linear-gradient(135deg, #ffffff, #ffffff); /* Gradiente suave que vai de um tom de roxo para um azul claro */
+    border-radius: 20px; /* Bordas arredondadas para um visual mais suave e moderno */
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2); /* Sombra suave e suave para dar profundidade */
+    padding: 200px; /* Espaçamento interno em torno do conteúdo */
+    width: 80%; /* Largura do container ajustada para 80% da tela */
+    max-width: 800px; /* Largura máxima de 800px */
+    margin: 50px auto; /* Centraliza o container horizontalmente e coloca um espaço no topo */
+    text-align: center; /* Alinha o conteúdo de texto ao centro */
+    color: #000000; /* Define a cor do texto como branco */
+    font-family: 'Roboto', sans-serif; /* Define uma fonte moderna e limpa */
+    transition: all 0.3s ease-in-out; /* Transição suave para qualquer alteração de estilo */
+  }
+  
+  /* Estilo para o título */
+  h1 {
+    font-size: 36px; /* Tamanho grande para o título */
+    font-weight: 700; /* Título em negrito */
+    margin-bottom: 50px; /* Espaço abaixo do título */
+    text-transform: uppercase; /* Título em letras maiúsculas */
+    letter-spacing: 2px; /* Aumenta o espaçamento entre as letras para um visual mais moderno */
+  }
+  
+  /* Estilo para o parágrafo */
+  p {
+    font-size: 18px; /* Tamanho de fonte média para o parágrafo */
+    color: rgba(0, 0, 0, 0.8); /* Cor branca com um pouco de transparência */
+    line-height: 1.6; /* Aumenta o espaçamento entre as linhas */
+    margin-bottom: 40px; /* Espaçamento abaixo do parágrafo */
+  }
+  
+  /* Estilo para o container de botões */
+  .buttons-container {
+    display: flex; /* Usamos o modelo flex para alinhar os botões em linha */
+    justify-content: center; /* Centraliza os botões horizontalmente */
+    gap: 20px; /* Espaço entre os botões */
+    margin-top: 30px; /* Espaço no topo */
+  }
+  
+  /* Estilo dos botões */
+  button {
+    background-color: #fff; /* Fundo branco */
+    color: #4facfe; /* Cor do texto no botão azul */
+    border: 2px solid #4facfe; /* Borda azul */
+    border-radius: 25px; /* Bordas arredondadas para um visual mais suave */
+    padding: 12px 35px; /* Espaçamento interno do botão (altura e largura) */
+    font-size: 16px; /* Tamanho do texto no botão */
+    font-weight: 600; /* Texto em negrito */
+    cursor: pointer; /* Cursor de mão ao passar o mouse sobre o botão */
+    transition: all 0.3s ease; /* Transição suave para mudanças nos botões */
+    width: 200px; /* Largura dos botões fixada */
+    text-transform: uppercase; /* Texto dos botões em letras maiúsculas */
+    letter-spacing: 1px; /* Aumenta o espaçamento das letras */
+  }
+  
+  /* Efeito de hover nos botões (ao passar o mouse) */
+  button:hover {
+    background-color: #4facfe; /* Muda o fundo para azul claro */
+    color: #fff; /* Muda o texto para branco */
+    transform: scale(1.05); /* Leve aumento do tamanho do botão */
+  }
+  
+  /* Efeito de clique no botão (ao pressionar) */
+  button:active {
+    background-color: #00c6ff; /* Cor do fundo muda ao ser pressionado */
+    transform: scale(1); /* Retorna ao tamanho original */
+  }
+  
+  /* Responsividade para dispositivos móveis */
+  @media (max-width: 768px) {
+    .dashboard-container {
+      padding: 30px; /* Menos espaço interno em telas menores */
+      width: 90%; /* Aumenta a largura do container para 90% da tela */
+    }
+  
+    h1 {
+      font-size: 28px; /* Menor tamanho para o título em telas pequenas */
+    }
+  
+    p {
+      font-size: 16px; /* Menor tamanho de fonte para o parágrafo */
+    }
+  
+    button {
+      width: 100%; /* Botões ocupam 100% da largura em telas pequenas */
+      font-size: 14px; /* Texto menor para botões em telas pequenas */
+    }
+  }
+  
+  /* Animação para o conteúdo da página */
+  .dashboard-container {
+    opacity: 0;
+    animation: fadeIn 1s forwards; /* Animação suave de aparecimento */
+  }
+  
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+  
