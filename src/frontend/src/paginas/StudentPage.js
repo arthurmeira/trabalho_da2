@@ -18,7 +18,7 @@ function StudentPage() {
 
   // Carregar estudantes ao montar o componente
   useEffect(() => {
-    fetch('/students')
+    fetch('http://localhost:5000/students') // URL ajustada
       .then((response) => response.json())
       .then((data) => setStudents(data))
       .catch(() => setError('Erro ao carregar estudantes'));
@@ -33,11 +33,28 @@ function StudentPage() {
     }));
   };
 
+  // Função para validar os dados do formulário
+  const validateFormData = () => {
+    if (!formData.name || !formData.age || !formData.parents || !formData.phone_number || !formData.special_needs || !formData.status) {
+      setError('Todos os campos obrigatórios devem ser preenchidos.');
+      return false;
+    }
+
+    if (isNaN(formData.age) || formData.age <= 0) {
+      setError('A idade deve ser um número válido.');
+      return false;
+    }
+
+    return true;
+  };
+
   // Função para cadastrar ou editar um estudante
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const url = editMode ? `/students/${currentStudentId}` : '/students';
+    if (!validateFormData()) return;
+
+    const url = editMode ? `http://localhost:5000/students/${currentStudentId}` : 'http://localhost:5000/students';
     const method = editMode ? 'PUT' : 'POST';
 
     fetch(url, {
@@ -77,7 +94,7 @@ function StudentPage() {
   // Função para excluir um estudante
   const handleDelete = (id) => {
     if (window.confirm('Tem certeza que deseja excluir este estudante?')) {
-      fetch(`/students/${id}`, {
+      fetch(`http://localhost:5000/students/${id}`, { // URL ajustada
         method: 'DELETE',
       })
         .then(() => {

@@ -16,10 +16,10 @@ function TeacherPage() {
 
   // Carregar professores ao montar o componente
   useEffect(() => {
-    fetch('/teachers')
+    fetch('http://localhost:5000/teachers') // URL ajustada
       .then((response) => response.json())
       .then((data) => setTeachers(data))
-      .catch((error) => setError('Erro ao carregar professores'));
+      .catch(() => setError('Erro ao carregar professores'));
   }, []);
 
   // Função para lidar com mudanças no formulário
@@ -35,7 +35,7 @@ function TeacherPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const url = editMode ? `/teachers/${currentTeacherId}` : '/teachers';
+    const url = editMode ? `http://localhost:5000/teachers/${currentTeacherId}` : 'http://localhost:5000/teachers';
     const method = editMode ? 'PUT' : 'POST';
 
     fetch(url, {
@@ -56,18 +56,19 @@ function TeacherPage() {
         } else {
           setTeachers((prevTeachers) => [...prevTeachers, data]);
         }
+        // Limpar formulário e estado de erro
         setFormData({ name: '', school_disciplines: '', contact: '', phone_number: '', status: '' });
         setEditMode(false);
         setCurrentTeacherId(null);
         setError('');
       })
-      .catch((error) => setError('Erro ao salvar professor.'));
+      .catch(() => setError('Erro ao salvar professor.'));
   };
 
   // Função para excluir um professor
   const handleDelete = (id) => {
     if (window.confirm('Tem certeza que deseja excluir este professor?')) {
-      fetch(`/teachers/${id}`, {
+      fetch(`http://localhost:5000/teachers/${id}`, { // URL ajustada
         method: 'DELETE',
       })
         .then(() => {
@@ -113,7 +114,7 @@ function TeacherPage() {
           required
         />
         <input
-          type="email"
+          type="email" // Alterado para email
           name="contact"
           placeholder="E-mail"
           value={formData.contact}

@@ -4,7 +4,6 @@ import './css/ProfessionalPage.css'; // Importar o CSS
 function ProfessionalPage() {
   const [professionals, setProfessionals] = useState([]);
   const [formData, setFormData] = useState({
-    id: '',
     name: '',
     specialty: '',
     contact: '',
@@ -17,7 +16,7 @@ function ProfessionalPage() {
 
   // Carregar profissionais ao montar o componente
   useEffect(() => {
-    fetch('/professionals')
+    fetch('http://localhost:5000/professionals') // URL ajustada
       .then((response) => response.json())
       .then((data) => setProfessionals(data))
       .catch(() => setError('Erro ao carregar profissionais'));
@@ -36,7 +35,7 @@ function ProfessionalPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const url = editMode ? `/professionals/${currentProfessionalId}` : '/professionals';
+    const url = editMode ? `http://localhost:5000/professionals/${currentProfessionalId}` : 'http://localhost:5000/professionals';
     const method = editMode ? 'PUT' : 'POST';
 
     fetch(url, {
@@ -58,7 +57,6 @@ function ProfessionalPage() {
           setProfessionals((prevProfessionals) => [...prevProfessionals, data]);
         }
         setFormData({
-          id: '',
           name: '',
           specialty: '',
           contact: '',
@@ -75,7 +73,7 @@ function ProfessionalPage() {
   // Função para excluir um profissional
   const handleDelete = (id) => {
     if (window.confirm('Tem certeza que deseja excluir este profissional?')) {
-      fetch(`/professionals/${id}`, {
+      fetch(`http://localhost:5000/professionals/${id}`, {  // URL ajustada
         method: 'DELETE',
       })
         .then(() => {
@@ -88,7 +86,6 @@ function ProfessionalPage() {
   // Função para editar um profissional
   const handleEdit = (professional) => {
     setFormData({
-      id: professional.id,
       name: professional.name,
       specialty: professional.specialty,
       contact: professional.contact,
@@ -105,14 +102,7 @@ function ProfessionalPage() {
       {error && <p className="error">{error}</p>}
 
       <form onSubmit={handleSubmit} className="professional-form">
-        <input
-          type="text"
-          name="id"
-          placeholder="ID do Profissional"
-          value={formData.id}
-          onChange={handleInputChange}
-          required
-        />
+        {/* ID removido, caso seja gerado pelo backend */}
         <input
           type="text"
           name="name"

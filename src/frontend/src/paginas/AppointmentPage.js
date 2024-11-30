@@ -1,8 +1,11 @@
+// frontend/src/components/AppointmentPage.js
+
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './css/AppointmentPage.css';
 
 function AppointmentPage() {
-  const [appointments, setAppointments] = useState([]);
+  const [appointments, setAppointments] = useState([]);  // Estado para armazenar compromissos
   const [formData, setFormData] = useState({
     specialty: '',
     comments: '',
@@ -16,11 +19,16 @@ function AppointmentPage() {
 
   // Carregar compromissos ao montar o componente
   useEffect(() => {
-    fetch('/appointments')
-      .then((response) => response.json())
-      .then((data) => setAppointments(data))
-      .catch((error) => setError('Erro ao carregar compromissos'));
-  }, []);
+    axios.get('http://localhost:5000/appointments')  // URL completa do backend
+      .then((response) => {
+        console.log("Compromissos carregados:", response.data);  // Verifica os dados no console
+        setAppointments(response.data);
+      })
+      .catch((error) => {
+        console.error("Erro ao carregar compromissos:", error);  // Log do erro
+        setError('Erro ao carregar compromissos');
+      });
+  }, []);  // O array vazio garante que o efeito seja executado uma vez na montagem do componente
 
   // Função para lidar com mudanças no formulário
   const handleInputChange = (event) => {
@@ -35,26 +43,26 @@ function AppointmentPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const url = editMode ? `/appointments/${currentAppointmentId}` : '/appointments';
-    const method = editMode ? 'PUT' : 'POST';
+    const url = editMode ? `http://localhost:5000/appointments/${currentAppointmentId}` : 'http://localhost:5000/appointments';
+    const method = editMode ? 'put' : 'post';
 
-    fetch(url, {
+    axios({
       method: method,
+      url: url,
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(formData),
+      data: formData,
     })
-      .then((response) => response.json())
-      .then((data) => {
+      .then((response) => {
         if (editMode) {
           setAppointments((prevAppointments) =>
             prevAppointments.map((appointment) =>
-              appointment.id === currentAppointmentId ? data : appointment
+              appointment.id === currentAppointmentId ? response.data : appointment
             )
           );
         } else {
-          setAppointments((prevAppointments) => [...prevAppointments, data]);
+          setAppointments((prevAppointments) => [...prevAppointments, response.data]);
         }
         setFormData({ specialty: '', comments: '', date: '', student: '', professional: '' });
         setEditMode(false);
@@ -67,9 +75,7 @@ function AppointmentPage() {
   // Função para excluir um compromisso
   const handleDelete = (id) => {
     if (window.confirm('Tem certeza que deseja excluir este compromisso?')) {
-      fetch(`/appointments/${id}`, {
-        method: 'DELETE',
-      })
+      axios.delete(`http://localhost:5000/appointments/${id}`)
         .then(() => {
           setAppointments(appointments.filter((appointment) => appointment.id !== id));
         })

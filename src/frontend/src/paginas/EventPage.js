@@ -14,7 +14,7 @@ function EventPage() {
 
   // Carregar eventos ao montar o componente
   useEffect(() => {
-    fetch('/events')
+    fetch('http://localhost:5000/events')  // URL ajustada para o backend correto
       .then((response) => response.json())
       .then((data) => setEvents(data))
       .catch(() => setError('Erro ao carregar eventos'));
@@ -33,7 +33,7 @@ function EventPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const url = editMode ? `/events/${currentEventId}` : '/events';
+    const url = editMode ? `http://localhost:5000/events/${currentEventId}` : 'http://localhost:5000/events';
     const method = editMode ? 'PUT' : 'POST';
 
     fetch(url, {
@@ -63,7 +63,7 @@ function EventPage() {
   // Função para excluir um evento
   const handleDelete = (id) => {
     if (window.confirm('Tem certeza que deseja excluir este evento?')) {
-      fetch(`/events/${id}`, {
+      fetch(`http://localhost:5000/events/${id}`, {  // URL ajustada para o backend correto
         method: 'DELETE',
       })
         .then(() => {
