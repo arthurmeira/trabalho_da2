@@ -154,6 +154,31 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Rota de login
+router.post('/login', async (req, res) => {
+  const { email, senha } = req.body;
+
+  try {
+    // Encontrar o usuário pelo email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Verificar se a senha corresponde (certifique-se de que você está comparando de maneira segura)
+    if (user.pwd !== senha) {
+      return res.status(401).json({ message: 'Senha incorreta' });
+    }
+
+    // Retornar o nível de acesso do usuário
+    res.json({
+      level: user.level,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao fazer login', error: error.message });
+  }
+});
+
 /**
  * @swagger
  * /users/{id}:
@@ -209,10 +234,6 @@ router.put('/:id', async (req, res) => {
  *     responses:
  *       200:
  *         description: Usuário deletado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Users'
  *       404:
  *         description: Usuário não encontrado
  */
@@ -220,7 +241,7 @@ router.delete('/:id', async (req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
-        res.json({ message: 'Usuário deletado com sucesso', user });
+        res.status(200).json({ message: 'Usuário deletado' });
     } catch (error) {
         res.status(500).json({ error: 'Erro ao deletar usuário' });
     }

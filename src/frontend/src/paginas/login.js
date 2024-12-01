@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Importando o axios para a requisição HTTP
 import './css/login.css';
 
 function Login() {
@@ -8,20 +9,42 @@ function Login() {
   const [erro, setErro] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (email === 'joao@gmail.com' && senha === '123') {
-      localStorage.setItem('userLevel', '1');
-      setErro('');
-      navigate('/dashboard');
-    }
-    else if (email === 'lucas@gmail.com' && senha === '123') {
-      localStorage.setItem('userLevel', '2');
-      setErro('');
-      navigate('/dashboard2');
-    } else {
-      setErro('Usuário ou senha inválidos.');
+    try {
+      // Preparando os dados para enviar no login
+      const data = { email, senha };
+
+      // Enviando a requisição POST para o backend usando axios
+      const response = await axios.post('http://localhost:5000/users/login', data);
+
+      if (response.status === 200) {
+        // Salvando o nível de acesso no localStorage
+        localStorage.setItem('userLevel', response.data.level);
+        setErro(''); // Limpa qualquer erro anterior
+
+        // Redirecionando para a tela de acordo com o nível de acesso do usuário
+        if (response.data.level === '1') {
+          navigate('/dashboard');
+        } else if (response.data.level === '2') {
+          navigate('/dashboard2');
+        }
+      } else {
+        setErro(response.data.message || 'Usuário ou senha inválidos.');
+      }
+    } catch (error) {
+      // Tratamento de erros
+      if (error.response) {
+        // Caso haja uma resposta de erro do servidor
+        setErro(error.response.data.message || 'Erro ao fazer login.');
+      } else if (error.request) {
+        // Caso não haja resposta do servidor
+        setErro('Erro ao conectar ao servidor.');
+      } else {
+        // Outros erros desconhecidos
+        setErro('Erro desconhecido: ' + error.message);
+      }
     }
   };
 
