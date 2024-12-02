@@ -9,8 +9,22 @@ function Login() {
   const [erro, setErro] = useState('');
   const navigate = useNavigate();
 
+  // Usuário local para fins de teste
+  const usuarioLocal = {
+    email: 'local@usuario.com',
+    senha: '123456',
+    level: '1', // Nível de acesso do usuário local
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    // Verificação de login local
+    if (email === usuarioLocal.email && senha === usuarioLocal.senha) {
+      localStorage.setItem('userLevel', usuarioLocal.level);
+      navigate('/dashboard');
+      return;
+    }
 
     try {
       // Preparando os dados para enviar no login

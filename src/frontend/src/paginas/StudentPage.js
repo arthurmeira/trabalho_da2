@@ -15,6 +15,7 @@ function StudentPage() {
   const [editMode, setEditMode] = useState(false);
   const [currentStudentId, setCurrentStudentId] = useState(null);
   const [error, setError] = useState('');
+  const [filterId, setFilterId] = useState('');  // Estado para armazenar o filtro de ID
 
   // Carregar estudantes ao montar o componente
   useEffect(() => {
@@ -119,6 +120,11 @@ function StudentPage() {
     setEditMode(true);
   };
 
+  // Função para filtrar os estudantes pelo ID
+  const filteredStudents = students.filter((student) =>
+    student.studentId.toLowerCase().includes(filterId.toLowerCase())  // Filtro baseado no studentId
+  );
+
   return (
     <div className="student-page-container">
       <h1>Gestão de Estudantes</h1>
@@ -175,19 +181,23 @@ function StudentPage() {
           <option value="on">Ativo</option>
           <option value="off">Inativo</option>
         </select>
-        <input
-          type="text"
-          name="studentId"
-          placeholder="ID do Estudante (Opcional)"
-          value={formData.studentId}
-          onChange={handleInputChange}
-        />
+        
         <button type="submit" className="submit-btn">
           {editMode ? 'Atualizar' : 'Cadastrar'}
         </button>
       </form>
 
       <h2>Estudantes Cadastrados</h2>
+
+      {/* Campo para filtrar estudantes pelo ID */}
+      <input
+        type="text"
+        placeholder="Pesquisa por ID"
+        value={filterId}
+        onChange={(e) => setFilterId(e.target.value)}
+        className="filter-input"
+      />
+
       <table className="student-table">
         <thead>
           <tr>
@@ -202,7 +212,7 @@ function StudentPage() {
           </tr>
         </thead>
         <tbody>
-          {students.map((student) => (
+          {filteredStudents.map((student) => (
             <tr key={student._id}>
               <td>{student.name}</td>
               <td>{student.age}</td>

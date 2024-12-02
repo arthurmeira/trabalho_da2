@@ -13,10 +13,11 @@ function TeacherPage() {
   const [editMode, setEditMode] = useState(false);
   const [currentTeacherId, setCurrentTeacherId] = useState(null);
   const [error, setError] = useState('');
+  const [filterId, setFilterId] = useState('');  // Estado para armazenar o ID a ser filtrado
 
   // Carregar professores ao montar o componente
   useEffect(() => {
-    fetch('http://localhost:5000/teachers') // URL ajustada
+    fetch('http://localhost:5000/teachers')
       .then((response) => response.json())
       .then((data) => setTeachers(data))
       .catch(() => setError('Erro ao carregar professores'));
@@ -56,7 +57,6 @@ function TeacherPage() {
         } else {
           setTeachers((prevTeachers) => [...prevTeachers, data]);
         }
-        // Limpar formulário e estado de erro
         setFormData({ name: '', school_disciplines: '', contact: '', phone_number: '', status: '' });
         setEditMode(false);
         setCurrentTeacherId(null);
@@ -68,7 +68,7 @@ function TeacherPage() {
   // Função para excluir um professor
   const handleDelete = (id) => {
     if (window.confirm('Tem certeza que deseja excluir este professor?')) {
-      fetch(`http://localhost:5000/teachers/${id}`, { // URL ajustada
+      fetch(`http://localhost:5000/teachers/${id}`, {
         method: 'DELETE',
       })
         .then(() => {
@@ -90,6 +90,11 @@ function TeacherPage() {
     setCurrentTeacherId(teacher._id);
     setEditMode(true);
   };
+
+  // Função para filtrar os professores pelo ID
+  const filteredTeachers = teachers.filter((teacher) =>
+    teacher._id.toLowerCase().includes(filterId.toLowerCase())  // Filtro baseado no ID
+  );
 
   return (
     <div className="teacher-page-container">
@@ -114,7 +119,7 @@ function TeacherPage() {
           required
         />
         <input
-          type="email" // Alterado para email
+          type="email"
           name="contact"
           placeholder="E-mail"
           value={formData.contact}
@@ -145,6 +150,16 @@ function TeacherPage() {
       </form>
 
       <h2>Professores Cadastrados</h2>
+
+      {/* Campo para filtrar professores pelo ID */}
+      <input
+        type="text"
+        placeholder="Pesquisa por ID"
+        value={filterId}
+        onChange={(e) => setFilterId(e.target.value)}
+        className="filter-input"
+      />
+
       <table className="teacher-table">
         <thead>
           <tr>
@@ -157,7 +172,7 @@ function TeacherPage() {
           </tr>
         </thead>
         <tbody>
-          {teachers.map((teacher) => (
+          {filteredTeachers.map((teacher) => (
             <tr key={teacher._id}>
               <td>{teacher.name}</td>
               <td>{teacher.school_disciplines}</td>

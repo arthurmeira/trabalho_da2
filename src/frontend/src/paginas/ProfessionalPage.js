@@ -13,6 +13,7 @@ function ProfessionalPage() {
   const [editMode, setEditMode] = useState(false);
   const [currentProfessionalId, setCurrentProfessionalId] = useState(null);
   const [error, setError] = useState('');
+  const [filterId, setFilterId] = useState('');  // Estado para armazenar o ID a ser filtrado
 
   // Carregar profissionais ao montar o componente
   useEffect(() => {
@@ -96,6 +97,11 @@ function ProfessionalPage() {
     setEditMode(true);
   };
 
+  // Função para filtrar os profissionais pelo ID
+  const filteredProfessionals = professionals.filter((professional) =>
+    professional.id.toString().toLowerCase().includes(filterId.toLowerCase())  // Filtro baseado no ID
+  );
+
   return (
     <div className="professional-page-container">
       <h1>Gestão de Profissionais</h1>
@@ -151,6 +157,16 @@ function ProfessionalPage() {
       </form>
 
       <h2>Profissionais Cadastrados</h2>
+      
+      {/* Campo para filtrar profissionais pelo ID */}
+      <input
+        type="text"
+        placeholder="Pesquisa por ID"
+        value={filterId}
+        onChange={(e) => setFilterId(e.target.value)}
+        className="filter-input"
+      />
+
       <table className="professional-table">
         <thead>
           <tr>
@@ -164,7 +180,7 @@ function ProfessionalPage() {
           </tr>
         </thead>
         <tbody>
-          {professionals.map((professional) => (
+          {filteredProfessionals.map((professional) => (
             <tr key={professional.id}>
               <td>{professional.id}</td>
               <td>{professional.name}</td>

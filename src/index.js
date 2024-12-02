@@ -22,7 +22,7 @@ app.use(cors({
 app.use(express.json());  // Permite o envio de JSON no corpo das requisições
 
 // Configuração do MongoDB
-mongoose.connect('mongodb://localhost:27017/appointments_db', { 
+mongoose.connect('mongodb://localhost:27017/Chain_db', { 
   useNewUrlParser: true, 
   useUnifiedTopology: true 
 })

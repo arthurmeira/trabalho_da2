@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';  // Importando axios para fazer requisições HTTP
+import axios from 'axios';
 import './css/UserPage.css';
 
 function UserPage() {
-  const [usuarios, setUsuarios] = useState([]); // Estado para armazenar os usuários
+  const [usuarios, setUsuarios] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,22 +12,21 @@ function UserPage() {
     level: '',
     status: '',
   });
-  const [editMode, setEditMode] = useState(false);  // Determina se estamos em modo de edição
-  const [currentUserId, setCurrentUserId] = useState(null);  // Armazena o ID do usuário atual
-  const [error, setError] = useState('');  // Armazena mensagens de erro
+  const [editMode, setEditMode] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [error, setError] = useState('');
+  const [filterId, setFilterId] = useState('');  // Estado para armazenar o ID a ser filtrado
 
-  // Carregar usuários ao montar o componente
   useEffect(() => {
-    axios.get('http://localhost:5000/users')  // Alterei para usar axios para pegar os usuários
+    axios.get('http://localhost:5000/users')
       .then((response) => {
         setUsuarios(response.data);
       })
       .catch((error) => {
         setError('Erro ao carregar usuários');
       });
-  }, []);  // O array vazio garante que o efeito seja executado uma vez na montagem do componente
+  }, []);
 
-  // Função para lidar com mudanças no formulário
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormData((prevData) => ({
@@ -36,10 +35,8 @@ function UserPage() {
     }));
   };
 
-  // Função para cadastrar ou editar um usuário
   const handleSubmit = (event) => {
     event.preventDefault();
-
     const url = editMode ? `http://localhost:5000/users/${currentUserId}` : 'http://localhost:5000/users';
     const method = editMode ? 'PUT' : 'POST';
 
@@ -69,18 +66,16 @@ function UserPage() {
       .catch(() => setError('Erro ao salvar usuário.'));
   };
 
-  // Função para excluir um usuário
   const handleDelete = (id) => {
     if (window.confirm('Tem certeza que deseja excluir este usuário?')) {
       axios.delete(`http://localhost:5000/users/${id}`)
         .then(() => {
-          setUsuarios(usuarios.filter((user) => user._id !== id));  // Alterando para usar _id
+          setUsuarios(usuarios.filter((user) => user._id !== id));
         })
         .catch(() => setError('Erro ao excluir usuário.'));
     }
   };
 
-  // Função para editar um usuário
   const handleEdit = (user) => {
     setFormData({
       name: user.name,
@@ -90,9 +85,14 @@ function UserPage() {
       level: user.level,
       status: user.status,
     });
-    setCurrentUserId(user._id);  // Alterando para usar _id
+    setCurrentUserId(user._id);
     setEditMode(true);
   };
+
+  // Função para filtrar os usuários pelo ID
+  const filteredUsuarios = usuarios.filter((user) =>
+    user._id.toLowerCase().includes(filterId.toLowerCase())  // Filtro baseado no ID
+  );
 
   return (
     <div className="user-page-container">
@@ -158,6 +158,16 @@ function UserPage() {
       </form>
 
       <h2>Usuários Cadastrados</h2>
+
+      {/* Campo para filtrar usuários pelo ID */}
+      <input
+        type="text"
+        placeholder="Pesquisa por ID"
+        value={filterId}
+        onChange={(e) => setFilterId(e.target.value)}
+        className="filter-input"
+      />
+
       <table className="user-table">
         <thead>
           <tr>
@@ -170,8 +180,8 @@ function UserPage() {
           </tr>
         </thead>
         <tbody>
-          {usuarios.map((user) => (
-            <tr key={user._id}>  {/* Alterado para usar _id */}
+          {filteredUsuarios.map((user) => (
+            <tr key={user._id}>
               <td>{user.name}</td>
               <td>{user.email}</td>
               <td>{user.user}</td>
@@ -179,7 +189,7 @@ function UserPage() {
               <td>{user.status}</td>
               <td>
                 <button onClick={() => handleEdit(user)}>Editar</button>
-                <button onClick={() => handleDelete(user._id)}>Excluir</button> {/* Alterado para usar _id */}
+                <button onClick={() => handleDelete(user._id)}>Excluir</button>
               </td>
             </tr>
           ))}

@@ -16,6 +16,7 @@ function AppointmentPage() {
   const [editMode, setEditMode] = useState(false);
   const [currentAppointmentId, setCurrentAppointmentId] = useState(null);
   const [error, setError] = useState('');
+  const [filterId, setFilterId] = useState('');  // Estado para armazenar o ID a ser filtrado
 
   // Carregar compromissos ao montar o componente
   useEffect(() => {
@@ -96,6 +97,11 @@ function AppointmentPage() {
     setEditMode(true);
   };
 
+  // Função para filtrar os compromissos pelo ID
+  const filteredAppointments = appointments.filter((appointment) =>
+    appointment.id.toLowerCase().includes(filterId.toLowerCase())  // Filtro baseado no ID
+  );
+
   return (
     <div className="appointment-page-container">
       <h1>Gestão de Compromissos</h1>
@@ -146,6 +152,16 @@ function AppointmentPage() {
       </form>
 
       <h2>Compromissos Cadastrados</h2>
+      
+      {/* Campo para filtrar compromissos pelo ID */}
+      <input
+        type="text"
+        placeholder="Pesquisa por ID"
+        value={filterId}
+        onChange={(e) => setFilterId(e.target.value)}
+        className="filter-input"
+      />
+
       <table className="appointment-table">
         <thead>
           <tr>
@@ -158,7 +174,7 @@ function AppointmentPage() {
           </tr>
         </thead>
         <tbody>
-          {appointments.map((appointment) => (
+          {filteredAppointments.map((appointment) => (
             <tr key={appointment.id}>
               <td>{appointment.specialty}</td>
               <td>{appointment.comments}</td>

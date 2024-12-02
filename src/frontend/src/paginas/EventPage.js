@@ -11,6 +11,7 @@ function EventPage() {
   const [editMode, setEditMode] = useState(false);
   const [currentEventId, setCurrentEventId] = useState(null);
   const [error, setError] = useState('');
+  const [filterId, setFilterId] = useState('');  // Estado para armazenar o ID a ser filtrado
 
   // Carregar eventos ao montar o componente
   useEffect(() => {
@@ -84,6 +85,11 @@ function EventPage() {
     setEditMode(true);
   };
 
+  // Função para filtrar os eventos pelo ID
+  const filteredEvents = events.filter((event) =>
+    event._id.toLowerCase().includes(filterId.toLowerCase())  // Filtro baseado no ID
+  );
+
   return (
     <div className="event-page-container">
       <h1>Gestão de Eventos</h1>
@@ -119,17 +125,27 @@ function EventPage() {
       </form>
 
       <h2>Eventos Cadastrados</h2>
+      
+      {/* Campo para filtrar eventos pelo ID */}
+      <input
+        type="text"
+        placeholder="Pesquisa por ID"
+        value={filterId}
+        onChange={(e) => setFilterId(e.target.value)}
+        className="filter-input"
+      />
+
       <table className="event-table">
         <thead>
           <tr>
             <th>Descrição</th>
             <th>Comentários</th>
-            <th>Data</th>
+            <th>Data e Hora</th>
             <th>Ações</th>
           </tr>
         </thead>
         <tbody>
-          {events.map((event) => (
+          {filteredEvents.map((event) => (
             <tr key={event._id}>
               <td>{event.description}</td>
               <td>{event.comments}</td>
